@@ -1,0 +1,361 @@
+﻿<mah:MetroWindow x:Class="projetFinalUA2.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 mc:Ignorable="d"
+                 Title="Gestion bibliothèque"
+                 Width="1200"
+                 Height="750"
+                 WindowStartupLocation="CenterScreen"
+                 TitleCharacterCasing="Normal"
+                 Loaded="MainWindow_Loaded">
+
+    <DockPanel LastChildFill="True">
+
+        <!-- MENU -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Fichier">
+                <MenuItem Header="_Quitter" Click="MenuQuitter_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Données">
+                <MenuItem Header="_Recharger" Click="MenuRecharger_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- TOOLBAR -->
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button Content="Recharger" Click="MenuRecharger_Click"/>
+            </ToolBar>
+        </ToolBarTray>
+
+        <!-- STATUS BAR : messages CRUD + résultats recherche -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock x:Name="TxtStatusCrud" Text="Prêt"/>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock x:Name="TxtStatusRecherche" Text=""/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- CONTENU : sections obligatoires -->
+        <TabControl Margin="12"
+                    Style="{StaticResource MahApps.Styles.TabControl.Animated}">
+
+            <!-- AUTEURS -->
+            <TabItem Header="Auteurs">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="360"/>
+                    </Grid.ColumnDefinitions>
+
+                    <DataGrid x:Name="GridAuteurs"
+                              Grid.Column="0"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              SelectionChanged="GridAuteurs_SelectionChanged"
+                              Margin="0,0,8,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
+                            <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="200"/>
+                            <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="200"/>
+                            <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*"/>
+                            <DataGridTextColumn Header="Créé (UTC)" Binding="{Binding DateCreationUtc}" Width="170"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Column="1" Style="{StaticResource CrudFormBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Auteur" Style="{StaticResource CrudFormTitleStyle}"/>
+
+                            <TextBox x:Name="TxtAuteurNom"
+                                     mah:TextBoxHelper.Watermark="Nom (obligatoire)"/>
+
+                            <TextBox x:Name="TxtAuteurPrenom"
+                                     mah:TextBoxHelper.Watermark="Prénom"/>
+
+                            <TextBox x:Name="TxtAuteurEmail"
+                                     mah:TextBoxHelper.Watermark="Email"/>
+
+                            <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Right">
+                                <Button x:Name="BtnAuteurNouveau"
+                                        Content="Nouveau"
+                                        Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                        Click="BtnAuteurNouveau_Click"
+                                        Margin="0,0,8,0"/>
+
+                                <Button x:Name="BtnAuteurEnregistrer"
+                                        Content="Enregistrer"
+                                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                        Click="BtnAuteurEnregistrer_Click"
+                                        Margin="0,0,8,0"/>
+
+                                <Button x:Name="BtnAuteurSupprimer"
+                                        Content="Supprimer"
+                                        Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                        Click="BtnAuteurSupprimer_Click"
+                                        IsEnabled="False"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- LIVRES : recherche + CRUD -->
+            <TabItem Header="Livres">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="420"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Recherche multicritère -->
+                    <WrapPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
+                        <TextBox x:Name="TxtLivreTitre"
+                                 Style="{StaticResource LivreSearchTextBoxStyle}"
+                                 mah:TextBoxHelper.Watermark="Titre contient..."/>
+
+                        <ComboBox x:Name="CboLivreAuteur"
+                                  Style="{StaticResource LivreSearchComboStyle}"
+                                  DisplayMemberPath="Nom"
+                                  SelectedValuePath="Id"/>
+
+                        <ComboBox x:Name="CboLivreEditeur"
+                                  Style="{StaticResource LivreSearchComboStyle}"
+                                  DisplayMemberPath="Nom"
+                                  SelectedValuePath="Id"/>
+
+                        <ComboBox x:Name="CboLivreCategorie"
+                                  Style="{StaticResource LivreSearchComboStyle}"
+                                  DisplayMemberPath="Nom"
+                                  SelectedValuePath="Id"/>
+
+                        <DatePicker x:Name="DpLivreDateDebut"
+                                    Style="{StaticResource LivreSearchDatePickerStyle}"/>
+
+                        <DatePicker x:Name="DpLivreDateFin"
+                                    Style="{StaticResource LivreSearchDatePickerStyle}"/>
+
+                        <Button Content="Rechercher"
+                                Style="{StaticResource LivreSearchButtonPrimaryStyle}"
+                                Click="BtnLivreRechercher_Click"/>
+
+                        <Button Content="Réinitialiser"
+                                Style="{StaticResource LivreSearchButtonSecondaryStyle}"
+                                Click="BtnLivreReset_Click"/>
+                    </WrapPanel>
+
+                    <!-- DataGrid résultats -->
+                    <DataGrid x:Name="GridLivres"
+                              Grid.Row="1"
+                              Grid.Column="0"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              SelectionChanged="GridLivres_SelectionChanged"
+                              Margin="0,0,8,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
+                            <DataGridTextColumn Header="Titre" Binding="{Binding Titre}" Width="*"/>
+                            <DataGridTextColumn Header="ISBN" Binding="{Binding Isbn}" Width="140"/>
+                            <DataGridTextColumn Header="Publication" Binding="{Binding DatePublication}" Width="140"/>
+                            <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur.Nom}" Width="180"/>
+                            <DataGridTextColumn Header="Éditeur" Binding="{Binding Editeur.Nom}" Width="180"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Formulaire CRUD livre -->
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CrudFormBorderStyle}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Livre" Style="{StaticResource CrudFormTitleStyle}"/>
+
+                                <TextBox x:Name="TxtLivreTitreCrud"
+                                         mah:TextBoxHelper.Watermark="Titre (obligatoire)"/>
+
+                                <TextBox x:Name="TxtLivreIsbn"
+                                         mah:TextBoxHelper.Watermark="ISBN (obligatoire, unique)"/>
+
+                                <DatePicker x:Name="DpLivrePublication"/>
+
+                                <ComboBox x:Name="CboLivreAuteurCrud"
+                                          DisplayMemberPath="Nom"
+                                          SelectedValuePath="Id"/>
+
+                                <ComboBox x:Name="CboLivreEditeurCrud"
+                                          DisplayMemberPath="Nom"
+                                          SelectedValuePath="Id"/>
+
+                                <TextBlock Text="Fiche détail" Style="{StaticResource CrudFormTitleStyle}" Margin="0,12,0,0"/>
+
+                                <TextBox x:Name="TxtFicheResume"
+                                         mah:TextBoxHelper.Watermark="Résumé"/>
+
+                                <TextBox x:Name="TxtFicheLangue"
+                                         mah:TextBoxHelper.Watermark="Langue"/>
+
+                                <TextBox x:Name="TxtFichePages"
+                                         mah:TextBoxHelper.Watermark="Nombre de pages"/>
+
+                                <TextBlock Text="Catégories (N–M)" Style="{StaticResource CrudFormTitleStyle}" Margin="0,12,0,0"/>
+
+                                <ListBox x:Name="LstLivreCategories"
+                                         SelectionMode="Multiple"
+                                         DisplayMemberPath="Nom"
+                                         Height="140"/>
+
+                                <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Right">
+                                    <Button x:Name="BtnLivreNouveau"
+                                            Content="Nouveau"
+                                            Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                            Click="BtnLivreNouveau_Click"
+                                            Margin="0,0,8,0"/>
+
+                                    <Button x:Name="BtnLivreEnregistrer"
+                                            Content="Enregistrer"
+                                            Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                            Click="BtnLivreEnregistrer_Click"
+                                            Margin="0,0,8,0"/>
+
+                                    <Button x:Name="BtnLivreSupprimer"
+                                            Content="Supprimer"
+                                            Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                            Click="BtnLivreSupprimer_Click"
+                                            IsEnabled="False"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- CATEGORIES -->
+            <TabItem Header="Catégories">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="360"/>
+                    </Grid.ColumnDefinitions>
+
+                    <DataGrid x:Name="GridCategories"
+                              Grid.Column="0"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              SelectionChanged="GridCategories_SelectionChanged"
+                              Margin="0,0,8,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
+                            <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="220"/>
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Column="1" Style="{StaticResource CrudFormBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Catégorie" Style="{StaticResource CrudFormTitleStyle}"/>
+
+                            <TextBox x:Name="TxtCategorieNom"
+                                     mah:TextBoxHelper.Watermark="Nom (obligatoire, unique)"/>
+
+                            <TextBox x:Name="TxtCategorieDescription"
+                                     mah:TextBoxHelper.Watermark="Description"/>
+
+                            <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Right">
+                                <Button x:Name="BtnCategorieNouveau"
+                                        Content="Nouveau"
+                                        Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                        Click="BtnCategorieNouveau_Click"
+                                        Margin="0,0,8,0"/>
+
+                                <Button x:Name="BtnCategorieEnregistrer"
+                                        Content="Enregistrer"
+                                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                        Click="BtnCategorieEnregistrer_Click"
+                                        Margin="0,0,8,0"/>
+
+                                <Button x:Name="BtnCategorieSupprimer"
+                                        Content="Supprimer"
+                                        Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                        Click="BtnCategorieSupprimer_Click"
+                                        IsEnabled="False"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- EDITEURS -->
+            <TabItem Header="Éditeurs">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="360"/>
+                    </Grid.ColumnDefinitions>
+
+                    <DataGrid x:Name="GridEditeurs"
+                              Grid.Column="0"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              SelectionChanged="GridEditeurs_SelectionChanged"
+                              Margin="0,0,8,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
+                            <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="260"/>
+                            <DataGridTextColumn Header="Téléphone" Binding="{Binding Telephone}" Width="160"/>
+                            <DataGridTextColumn Header="Site web" Binding="{Binding SiteWeb}" Width="*"/>
+                            <DataGridTextColumn Header="Créé (UTC)" Binding="{Binding DateCreationUtc}" Width="170"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Column="1" Style="{StaticResource CrudFormBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Éditeur" Style="{StaticResource CrudFormTitleStyle}"/>
+
+                            <TextBox x:Name="TxtEditeurNom"
+                                     mah:TextBoxHelper.Watermark="Nom (obligatoire, unique)"/>
+
+                            <TextBox x:Name="TxtEditeurTelephone"
+                                     mah:TextBoxHelper.Watermark="Téléphone"/>
+
+                            <TextBox x:Name="TxtEditeurSiteWeb"
+                                     mah:TextBoxHelper.Watermark="Site web"/>
+
+                            <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Right">
+                                <Button x:Name="BtnEditeurNouveau"
+                                        Content="Nouveau"
+                                        Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                        Click="BtnEditeurNouveau_Click"
+                                        Margin="0,0,8,0"/>
+
+                                <Button x:Name="BtnEditeurEnregistrer"
+                                        Content="Enregistrer"
+                                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                        Click="BtnEditeurEnregistrer_Click"
+                                        Margin="0,0,8,0"/>
+
+                                <Button x:Name="BtnEditeurSupprimer"
+                                        Content="Supprimer"
+                                        Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                        Click="BtnEditeurSupprimer_Click"
+                                        IsEnabled="False"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+    </DockPanel>
+</mah:MetroWindow>
